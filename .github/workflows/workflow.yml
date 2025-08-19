@@ -1,0 +1,75 @@
+name: Build TDLib (Windows)
+
+on:
+  workflow_dispatch: # 手动触发
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout current repository (instead of cloning td)
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (Chocolatey)
+        shell: pwsh
+        run: |
+          # 安装 PHP, JDK
+          choco install -y php --version=8.2.12
+          choco install -y openjdk11
+          
+          # 确保 cmake 和 git 已安装（GitHub Actions 自带，但强制装下最新）
+          choco install -y cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+          choco install -y git
+
+      - name: Check environment
+        shell: pwsh
+        run: |
+          php -v
+          java -version
+          cmake --version
+          git --version
+
+      - name: Clone vcpkg
+        shell: pwsh
+        run: |
+          cd td
+          git clone https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          git checkout bc3512a509f9d29b37346a7e7e929f9a26e66c7e
+          ./bootstrap-vcpkg.bat
+          ./vcpkg.exe install gperf:x64-windows openssl:x64-windows zlib:x64-windows
+
+      - name: Build TDLib
+        shell: pwsh
+        run: |
+          cd td
+          Remove-Item build -Force -Recurse -ErrorAction SilentlyContinue
+          mkdir build
+          cd build
+          cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../example/java/td -DTD_ENABLE_JNI=ON -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../vcpkg/scripts/buildsystems/vcpkg.cmake ..
+          cmake --build . --target install --config Debug
+
+      - name: Build Java Example
+        shell: pwsh
+        run: |
+          cd td/example/java
+          Remove-Item build -Force -Recurse -ErrorAction SilentlyContinue
+          mkdir build
+          cd build
+          cmake -A x64 -DCMAKE_INSTALL_PREFIX:PATH=../../../tdlib -DCMAKE_TOOLCHAIN_FILE:FILEPATH=../../../vcpkg/scripts/buildsystems/vcpkg.cmake -DTd_DIR:PATH=$(Resolve-Path ../td/lib/cmake/Td) ..
+          cmake --build . --target install --config Debug
+
+      - name: Show build output
+        shell: pwsh
+        run: |
+          dir td/tdlib
+
+      - name: Upload TDLib artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tdlib-windows
+          path: td/tdlib
