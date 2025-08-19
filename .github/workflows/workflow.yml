@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout current repository (instead of cloning td)
         uses: actions/checkout@v4
+        with:
+          path: td
 
       - name: Install dependencies (Chocolatey)
         shell: pwsh
