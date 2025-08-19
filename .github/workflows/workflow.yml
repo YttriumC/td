@@ -41,7 +41,26 @@ jobs:
           cd vcpkg
           git checkout bc3512a509f9d29b37346a7e7e929f9a26e66c7e
           ./bootstrap-vcpkg.bat
-          ./vcpkg.exe install gperf:x64-windows openssl:x64-windows zlib:x64-windows
+
+      - name: Install vcpkg packages with retry
+        shell: pwsh
+        run: |
+          cd td/vcpkg
+          $env:VCPKG_DOWNLOADS="https://ftp.gnu.org/gnu"
+          $packages = "gperf:x64-windows","openssl:x64-windows","zlib:x64-windows"
+          $retries = 3
+          foreach ($pkg in $packages) {
+              for ($i=0; $i -lt $retries; $i++) {
+                  try {
+                      Write-Host "Installing $pkg..."
+                      .\vcpkg.exe install $pkg
+                      break
+                  } catch {
+                      Write-Host "Install failed, retrying in 10s..."
+                      Start-Sleep -Seconds 10
+                  }
+              }
+          }
 
       - name: Build TDLib
         shell: pwsh
