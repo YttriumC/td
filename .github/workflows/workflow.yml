@@ -40,7 +40,10 @@ jobs:
           git clone https://github.com/Microsoft/vcpkg.git
           cd vcpkg
           git checkout bc3512a509f9d29b37346a7e7e929f9a26e66c7e
-          $env:VCPKG_DOWNLOADS="https://ftp.gnu.org/gnu"
+          $env:VCPKG_DOWNLOAD_TIMEOUT = 600
+          $env:VCPKG_OVERRIDE_DOWNLOAD_URLS = @(
+          "gperf;https://github.com/lattera/gperf/releases/download/gperf-3.1/gperf-3.1.tar.gz"
+          )
           ./bootstrap-vcpkg.bat
           $retries = 3
           for ($i=0; $i -lt $retries; $i++) {
