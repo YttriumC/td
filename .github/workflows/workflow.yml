@@ -87,13 +87,17 @@ jobs:
         id: builddate
         run: echo "date=$(Get-Date -Format 'yyyy-MM-dd')" >> $env:GITHUB_OUTPUT
         shell: pwsh
-
+      - name: Archive TDLib
+        shell: pwsh
+        run: |
+          Compress-Archive -Path td/tdlib/* -DestinationPath tdlib-windows.zip
+          
       - name: Create Release and Upload TDLib
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.builddate.outputs.date }}
           name: ${{ steps.builddate.outputs.date }}
           body: "Automated build for ${{ steps.builddate.outputs.date }}"
-          files: td/tdlib/**
+          files: td/tdlib/tdlib-windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
