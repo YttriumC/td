@@ -91,6 +91,7 @@ jobs:
       - name: Create Release and Upload TDLib
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.builddate.outputs.date }}
           name: ${{ steps.builddate.outputs.date }}
           body: "Automated build for ${{ steps.builddate.outputs.date }}"
           files: td/tdlib/**
