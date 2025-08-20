@@ -1,5 +1,6 @@
 name: Build TDLib (Windows)
-
+permissions:
+  contents: write
 on:
   push:
     branches:
@@ -82,8 +83,16 @@ jobs:
         run: |
           dir td/tdlib
 
-      - name: Upload TDLib artifacts
-        uses: actions/upload-artifact@v4
+      - name: Get Date
+        id: builddate
+        run: echo "date=$(Get-Date -Format 'yyyy-MM-dd')" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
+      - name: Create Release and Upload TDLib
+        uses: softprops/action-gh-release@v2
         with:
-          name: tdlib-windows
-          path: td/tdlib
+          name: ${{ steps.builddate.outputs.date }}
+          body: "Automated build for ${{ steps.builddate.outputs.date }}"
+          files: td/tdlib/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
