@@ -83,6 +83,17 @@ jobs:
         run: |
           dir td/tdlib
 
+      - name: Copy Java example to source folder
+        shell: pwsh
+        run: |
+          $sourceDir = "td/tdlib/source"
+          if (-Not (Test-Path $sourceDir)) {
+              New-Item -ItemType Directory -Path $sourceDir
+          }
+
+          $exampleDir = "td/example/java"
+          Copy-Item "$exampleDir\*" $sourceDir -Recurse -Force
+
       - name: Get Date
         id: builddate
         run: echo "date=$(Get-Date -Format 'yyyy-MM-dd')" >> $env:GITHUB_OUTPUT
