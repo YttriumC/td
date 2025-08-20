@@ -98,6 +98,6 @@ jobs:
           tag_name: ${{ steps.builddate.outputs.date }}
           name: ${{ steps.builddate.outputs.date }}
           body: "Automated build for ${{ steps.builddate.outputs.date }}"
-          files: td/tdlib/tdlib-windows.zip
+          files: tdlib-windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
